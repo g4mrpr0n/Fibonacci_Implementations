@@ -1,9 +1,13 @@
 #include <iostream>
 #include <math.h>
+#include <chrono>
 #include <vector>
 #include <string>
+#include <fstream>
 using namespace std;
+using namespace std::chrono;
 
+ofstream outfile("outfile.txt",std::fstream::in | std::fstream::out | std::fstream::app);
 
 class BigInt {
     string number;
@@ -82,9 +86,7 @@ struct Node
     Node* prev;
 
     Node(BigInt number, Node* next = nullptr, Node* prev = nullptr)
-        : number(number), next(next), prev(prev)
-    {
-    }
+        : number(number), next(next), prev(prev){ }
 };
 
 
@@ -104,10 +106,8 @@ BigInt fibrecmem(int n, BigInt* t)
         a.assign(b);
         return a;
     }
-
     if (t[n].getter().length() > 1 && n > 1)
     {
-
         return t[n];
     }
     else {
@@ -115,25 +115,15 @@ BigInt fibrecmem(int n, BigInt* t)
         t[n] = fibrecmem(n - 1, t) + fibrecmem(n - 2, t);
         return t[n];
     }
+    
 }
 
 
 //Simple recursive
-BigInt fibrec(int n)
+int fibrec(int n)
 {
-    BigInt a("0");
-    if (n == 0)
-    {
-        BigInt b("0");
-        a.assign(b);
-        return a;
-    }
-    if (n == 1)
-    {
-        BigInt b("1");
-        a.assign(b);
-        return a;
-    }
+    if (n == 0 || n == 1)
+        return n;
     else return fibrec(n - 1) + fibrec(n - 2);
 }
 
@@ -183,7 +173,7 @@ void print(Node* x)
     print(x->next);
 }
 
-
+//Matrix multiplication
 BigInt fib(int n) {
     BigInt a("1"), b("0"), c("0"), d("1"), t;
     if (n == 0)
@@ -209,17 +199,51 @@ BigInt fib(int n) {
 
 int main()
 {
-    BigInt t[1151];
-    int n = 20;
+    BigInt *t = new BigInt[1214]();
+    int n = 1213;
+
+    auto Doubly_ll_start = high_resolution_clock::now();
     Node* root = new Node(BigInt("0"), nullptr, nullptr);
     Node* firstEl = new Node(BigInt("1"), nullptr, root);
     root->next = firstEl;
-    generate(firstEl, n-1);
-    cout << "Recursive with memoization(top-down): " << fibrecmem(n, t) << "\n\n";
-    cout << "Iterative: " << fibiter(n-1) << "\n\n";
-    cout << "Binet: " << fibbin(n) << "\n\n";    
-    cout << "Doubly-linked list iterative optimisation: ";
+    generate(firstEl, n - 1);
+    auto Doubly_ll_stop = high_resolution_clock::now();
+    auto duration_ll = duration_cast<milliseconds>(Doubly_ll_stop - Doubly_ll_start);
+    cout << "Doubly linked list: ";
     print(root);
-    cout << "\n\nRecursive: " << fibrec(n);
-    cout << "\n\nMatrix multiplication: " << fib(n) << "\n";
+    cout << "\nDoubly linked list time: " << duration_ll.count() / 1e3f;
+
+    auto Iter_start = high_resolution_clock::now();
+    cout << "\n\nIteration: " << fibiter(n - 1);
+    auto Iter_stop = high_resolution_clock::now();
+    auto duration_Iter = duration_cast<milliseconds>(Iter_stop - Iter_start);
+    cout << "\nIterative time: " << duration_Iter.count() / 1e3f;
+
+    auto Bin_start = high_resolution_clock::now();
+    cout << "\n\nBinet: " << fibbin(n);
+    auto Bin_stop = high_resolution_clock::now();
+    auto duration_bin = duration_cast<milliseconds>(Bin_stop - Bin_start);
+    cout << "\nBinet time: " << duration_bin.count() / 1e3f;
+
+    auto Matr_start = high_resolution_clock::now();
+    cout << "\n\nMatrix multiplication: " << fib(n);
+    auto Matr_stop = high_resolution_clock::now();
+    auto duration_matr = duration_cast<milliseconds>(Matr_stop - Matr_start);
+    cout << "\nMatrix multiplication time: " << duration_matr.count() / 1e3f;
+
+    auto Recmem_start = high_resolution_clock::now();
+    cout << "\n\nRecursive with memoization: " << fibrecmem(n, t);
+    auto Recmem_stop = high_resolution_clock::now();
+    auto duration_recmem = duration_cast<milliseconds>(Recmem_stop - Recmem_start);
+    cout << "\nRecursive with memoization time: " << duration_recmem.count() / 1e3f;
+    delete[]t;
+
+    auto Rec_start = high_resolution_clock::now();
+    cout << "\n" << fibrec(n) << "\n";
+    auto Rec_stop = high_resolution_clock::now();
+    auto duration_rec = duration_cast<milliseconds>(Rec_stop - Rec_start);
+    cout << "\n\nRecursive time: " << duration_rec.count() / 1e3f;
+
+    outfile << n  << " "  << duration_matr.count() / 1e3f  << endl;
+
 }
